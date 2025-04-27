@@ -6,12 +6,7 @@ const app = express();
 
 app.use(express.json());
 
-const data = [
-    {
-        email: "Tiago@email.com",
-        password: "cu",
-    }    
-];
+const data = [];
 
 app.post("/registerUser", async(req, res) => {
     const { email, password } = req.body;
@@ -33,14 +28,22 @@ app.post("/registerUser", async(req, res) => {
     res.send("success.");
 });
 
-app.get("/login", () => {
+app.post("/login", async(req, res) => {
     const { email, password } = req.body;
 
     const user = data.find((u) => u.email === email);
 
     if (!user) {
-        res.status(401).send("Not authorized.");
+        res.status(400).send("Not authorized.");
     }
+
+    const isPasswordMatching = await bcrypt.compare(password, user.password)
+
+    if (!isPasswordMatching) {
+        res.status(400).send("Not authorized.");
+    }
+
+    res.status(200).send("User logged in.");
 })
 
 app.listen(PORT, () => { console.log("Listening on port:", PORT) });
