@@ -3,8 +3,8 @@ import bcrypt from "bcrypt";
 import jwt from "jsonwebtoken";
 
 const PORT = 6767;
+const SECRET_KEY = "test_secret_key";
 const app = express();
-const secretKey = "A@#PJ!#)I(Dj323243";
 
 app.use(express.json());
 
@@ -45,17 +45,26 @@ app.post("/login", async(req, res) => {
         res.status(400).send("Not authorized.");
     }
 
-    const token = jwt.sign({ email: user.email }, secretKey);
+    const token = jwt.sign({ email: user.email }, SECRET_KEY);
 
     res.status(200).send(token);
 })
 
 app.get("/verifyToken", (req, res) => {
-    const token = req.header("Authorization");
+    const authHeader = req.header("Authorization");
+    const token = authHeader && authHeader.split(" ")[1];
 
     if (!token) {
         return res.status(401).json({ error: 'Access denied' })
     }
+
+    jwt.verify(token, SECRET_KEY, (err, decoded) => {
+        if (err) {
+            return res.status(401).json({ message: 'Invalid or expired token' });
+        }
+
+        res.json({ message: 'Token is valid', data: decoded });
+    });
 })
 
 app.listen(PORT, () => { console.log("Listening on port:", PORT) });
