@@ -1,6 +1,9 @@
 import express from "express";
 import bcrypt from "bcrypt";
 import jwt from "jsonwebtoken";
+import NodeCache from "node-cache";
+
+const cache = new NodeCache({ stdTTL: 60 * 10 })
 
 const PORT = 6767;
 const SECRET_KEY = "test_secret_key";
@@ -17,7 +20,7 @@ app.post("/registerUser", async(req, res) => {
     const existingUser = data.find((u) => u.email === email);
 
     if (existingUser) {
-        res.status(409).send("User email is already in use.");
+        return res.status(409).send("User email is already in use.");
     }
 
     const user = {
@@ -36,7 +39,7 @@ app.post("/login", async(req, res) => {
     const user = data.find((u) => u.email === email);
 
     if (!user) {
-        res.status(400).send("Not authorized.");
+        return res.status(400).send("Not authorized.");
     }
 
     const isPasswordMatching = await bcrypt.compare(password, user.password)
@@ -58,11 +61,17 @@ app.get("/verifyToken", (req, res) => {
         return res.status(401).json({ error: 'Access denied' })
     }
 
+    const cachedData = cache.get(token);
+    if (cachedData) {
+        return res.json({ message: 'Token is valid', data: cachedData });
+    }
+
     jwt.verify(token, SECRET_KEY, (err, decoded) => {
         if (err) {
-            return res.status(401).json({ message: 'Invalid or expired token' });
+            res.status(401).json({ message: 'Invalid or expired token' });
         }
 
+        cache.set(token, decoded); 
         res.json({ message: 'Token is valid', data: decoded });
     });
 })
