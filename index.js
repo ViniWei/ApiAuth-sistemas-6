@@ -3,6 +3,8 @@ import bcrypt from "bcrypt";
 import jwt from "jsonwebtoken";
 import NodeCache from "node-cache";
 
+import db from "./db.js";
+
 const cache = new NodeCache({ stdTTL: 60 * 10 })
 
 const PORT = 6767;
