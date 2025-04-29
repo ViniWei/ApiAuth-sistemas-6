@@ -15,7 +15,7 @@ app.use(express.json());
 const data = [];
 
 app.post("/registerUser", async(req, res) => {
-    const { email, password } = req.body;
+    const { name, email, password } = req.body;
 
     const existingUser = data.find((u) => u.email === email);
 
@@ -25,6 +25,7 @@ app.post("/registerUser", async(req, res) => {
 
     const user = {
         email,
+        name,
         password: await bcrypt.hash(password, 3)
     };
 
@@ -48,7 +49,7 @@ app.post("/login", async(req, res) => {
         res.status(400).send("Not authorized.");
     }
 
-    const token = jwt.sign({ email: user.email }, SECRET_KEY);
+    const token = jwt.sign({ email: user.email, name: user.name }, SECRET_KEY);
 
     res.status(200).send(token);
 })
