@@ -9,11 +9,14 @@ const cache = new NodeCache({ stdTTL: 60 * 10 })
 
 const PORT = 6767;
 const SECRET_KEY = "test_secret_key";
+
+const BASE_PATH = "/api/users"
+
 const app = express();
 
 app.use(express.json());
 
-app.post("/registerUser", async(req, res) => {
+app.post(`${BASE_PATH}/registerUser`, async(req, res) => {
     const { name, email, password } = req.body;
 
     const existingUser = await db.getUserByEmail(email);
@@ -37,7 +40,7 @@ app.post("/registerUser", async(req, res) => {
     res.send("success.");
 });
 
-app.post("/login", async(req, res) => {
+app.post(`${BASE_PATH}/login`, async(req, res) => {
     const { email, password } = req.body;
 
     const user = await db.getUserByEmail(email);
@@ -57,7 +60,7 @@ app.post("/login", async(req, res) => {
     res.status(200).send(token);
 })
 
-app.get("/verifyToken", (req, res) => {
+app.get(`${BASE_PATH}/verifyToken`, (req, res) => {
     const authHeader = req.header("Authorization");
     const token = authHeader && authHeader.split(" ")[1];
 
