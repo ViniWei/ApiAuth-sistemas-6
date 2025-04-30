@@ -31,7 +31,11 @@ app.post("/registerUser", async(req, res) => {
         password: await bcrypt.hash(password, 3)
     };
 
-    data.push(user);
+    try {
+        db.addUser(user);
+    } catch (e) {
+        res.status(500).send("Internal server error.");
+    }
 
     res.send("success.");
 });
