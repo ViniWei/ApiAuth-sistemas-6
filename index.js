@@ -13,13 +13,10 @@ const app = express();
 
 app.use(express.json());
 
-
-const data = [];
-
 app.post("/registerUser", async(req, res) => {
     const { name, email, password } = req.body;
 
-    const existingUser = data.find((u) => u.email === email);
+    const existingUser = await db.getUserByEmail(email);
 
     if (existingUser) {
         return res.status(409).send("User email is already in use.");
@@ -32,7 +29,7 @@ app.post("/registerUser", async(req, res) => {
     };
 
     try {
-        db.addUser(user);
+        await db.addUser(user);
     } catch (e) {
         res.status(500).send("Internal server error.");
     }
@@ -43,7 +40,7 @@ app.post("/registerUser", async(req, res) => {
 app.post("/login", async(req, res) => {
     const { email, password } = req.body;
 
-    const user = data.find((u) => u.email === email);
+    const user = await db.getUserByEmail(email);
 
     if (!user) {
         return res.status(400).send("Not authorized.");
