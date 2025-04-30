@@ -19,7 +19,11 @@ app.use(express.json());
 app.post(`${BASE_PATH}/registerUser`, async(req, res) => {
     const { name, email, password } = req.body;
 
-    const existingUser = await db.getUserByEmail(email);
+    let existingUser = cache.get(email);
+    if (!existingUser) {
+        existingUser = await db.getUserByEmail(email);
+        cache.set(email, existingUser); 
+    }
 
     if (existingUser) {
         return res.status(409).send("User email is already in use.");
@@ -43,7 +47,11 @@ app.post(`${BASE_PATH}/registerUser`, async(req, res) => {
 app.post(`${BASE_PATH}/login`, async(req, res) => {
     const { email, password } = req.body;
 
-    const user = await db.getUserByEmail(email);
+    let user = cache.get(email);
+    if (!user) {
+        user = await db.getUserByEmail(email);
+        cache.set(email, user); 
+    }
 
     if (!user) {
         return res.status(400).send("Not authorized.");
